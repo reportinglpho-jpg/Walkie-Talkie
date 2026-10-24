@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการข้อมูลวิทยุสื่อสาร (Two-Way Radio Asset)</title>
+    <link rel="icon" type="image/png" href="walkie-talkies.png">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase App & Firestore SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+        .tab-btn.active {
+            background-color: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- Navbar -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchMainTab('allRadios')">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fa-solid me-0 fa-walkie-talkie text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">RadioAsset Pro</h1>
+                    <p class="text-xs text-slate-400">ระบบจัดการทะเบียนข้อมูลวิทยุสื่อสารองค์กร (Firebase)</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <div class="flex items-center space-x-2">
+                <nav class="flex space-x-1 bg-slate-800 p-1 rounded-xl">
+                    <button id="navAllRadios" onclick="switchMainTab('allRadios')" class="tab-btn active px-4 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                        <i class="fa-solid fa-list-ul"></i>
+                        <span>รายการวิทยุทั้งหมด</span>
+                    </button>
+                    <!-- Hidden tab for repair request view -->
+                    <button id="navRepair" onclick="switchMainTab('repair')" class="hidden tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                        <i class="fa-solid fa-wrench"></i>
+                        <span>แจ้งส่งซ่อม</span>
+                    </button>
+                    <button id="navAdmin" onclick="switchMainTab('admin')" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>จัดการข้อมูล (Admin)</span>
+                    </button>
+                </nav>
+                <button id="btnLogout" onclick="adminLogout()" class="hidden bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-1 border border-rose-500/30">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: รายการวิทยุทั้งหมด & ค้นหา -->
+        <section id="secAllRadios" class="space-y-6">
+            <!-- Search & Filter Controls -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-walkie-talkie text-blue-600"></i>
+                            <span>ค้นหาและตรวจสอบข้อมูลวิทยุสื่อสาร</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">ค้นหาด้วย ชื่อ, หมายเลข IMEI, เบอร์โทรศัพท์ หรือเลือกจากดรอปดาวน์</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <span id="radioTotalBadge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
+                            ทั้งหมด 0 เครื่อง
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <!-- Text Search -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <input type="text" id="searchInput" oninput="filterRadios()" placeholder="พิมพ์ค้นหาด้วย ชื่อ / IMEI / เบอร์โทรศัพท์..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Dropdown Select -->
+                    <div class="relative">
+                        <select id="selectRadioDropdown" onchange="onDropdownSelect(this.value)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">-- หรือเลือกชื่อวิทยุเพื่อดูข้อมูล --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Radio Cards Grid -->
+            <div id="radioCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards render dynamically -->
+            </div>
+            <div id="emptySearchState" class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+                <i class="fa-solid fa-box-open text-4xl text-slate-300 mb-3"></i>
+                <p class="text-slate-500 font-medium">ไม่พบข้อมูลอุปกรณ์วิทยุสื่อสารในระบบ</p>
+            </div>
+        </section>
+
+        <!-- TAB 2: หน้าแจ้งส่งซ่อมวิทยุสื่อสาร -->
+        <section id="secRepair" class="hidden space-y-6 max-w-3xl mx-auto">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-wrench text-amber-600"></i>
+                        <span>แบบฟอร์มแจ้งส่งซ่อมวิทยุสื่อสาร</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">เลือกอุปกรณ์และระบุรายการอาการเสียเพื่อบันทึกประวัติส่งซ่อม</p>
+                </div>
+
+                <form id="repairForm" onsubmit="handleSaveRepairRequest(event)" class="space-y-6">
+                    <!-- Radio Selection -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">เลือกอุปกรณ์วิทยุสื่อสาร <span class="text-rose-500">*</span></label>
+                        <select id="repairSelectRadio" required onchange="onRepairSelectRadioChange()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <option value="">-- เลือกรายการวิทยุสื่อสาร --</option>
+                        </select>
+                    </div>
+
+                    <!-- Radio Summary Card -->
+                    <div id="repairRadioSummary" class="hidden bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">IMEI:</span>
+                            <span id="summaryImei" class="font-medium text-slate-800"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">เบอร์โทรศัพท์:</span>
+                            <span id="summaryPhone" class="font-medium text-slate-800"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">ประวัติซ่อมสะสม:</span>
+                            <span id="summaryRepairCount" class="font-medium text-amber-600"></span>
+                        </div>
+                    </div>
+
+                    <!-- Repair Date -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่ส่งซ่อม <span class="text-rose-500">*</span></label>
+                        <input type="date" id="repairDateInput" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Dynamic Symptoms Checklist / Multi-select -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-semibold text-slate-600">รายการอาการเสีย <span class="text-rose-500">*</span></label>
+                            <button type="button" onclick="addRepairSymptomDropdownRow()" class="text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 font-medium px-2.5 py-1 rounded-lg transition border border-amber-200 flex items-center space-x-1">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>เพิ่มอาการเสีย</span>
+                            </button>
+                        </div>
+
+                        <div id="repairSymptomsContainer" class="space-y-2">
+                            <!-- Dynamic symptom dropdown rows go here -->
+                        </div>
+                    </div>
+
+                    <!-- Additional Symptom Note -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">รายละเอียดอาการเสียเพิ่มเติม / หมายเหตุ</label>
+                        <textarea id="repairDetailInput" rows="3" placeholder="ระบุรายละเอียดอาการเสียเพิ่มเติม เช่น ปุ่มเปิดไม่ติด, สายชาร์จหลวม..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
+                        <button type="button" onclick="switchMainTab('allRadios')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium transition flex items-center space-x-1">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>กลับ</span>
+                        </button>
+                        <button type="button" onclick="resetRepairForm()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium transition">
+                            ล้างข้อมูล
+                        </button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 text-white font-medium hover:bg-amber-700 text-sm transition shadow-sm">
+                            บันทึกแจ้งซ่อม
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB 3: หน้า Admin จัดการข้อมูล -->
+        <section id="secAdmin" class="hidden space-y-6">
+            <!-- Login Overlay if not authenticated -->
+            <div id="adminLoginCard" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-md border border-slate-200 mt-8">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-lock text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800">เข้าสู่ระบบผู้ดูแลระบบ</h2>
+                    <p class="text-xs text-slate-500 mt-1">กรุณากรอก Username และ Password เพื่อเข้าจัดการข้อมูล</p>
+                </div>
+
+                <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+                        <input type="text" id="loginUser" required placeholder="admin" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                        <div class="relative">
+                            <input type="password" id="loginPass" required placeholder="••••••••" class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="button" onclick="togglePasswordVisibility('loginPass', 'eyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+                                <i id="eyeIcon" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 transition shadow-sm">
+                        เข้าสู่ระบบ
+                    </button>
+                </form>
+            </div>
+
+            <!-- Admin Content (Visible when logged in) -->
+            <div id="adminContent" class="hidden space-y-6">
+                <!-- Sub-nav for Admin Sections -->
+                <div class="flex border-b border-slate-200 space-x-4">
+                    <button id="adminSubNavRadios" onclick="switchAdminSubTab('radios')" class="py-2.5 px-4 font-semibold text-sm text-blue-600 border-b-2 border-blue-600 flex items-center space-x-2">
+                        <i class="fa-solid fa-walkie-talkie"></i>
+                        <span>จัดการอุปกรณ์วิทยุ</span>
+                    </button>
+                    <button id="adminSubNavSymptoms" onclick="switchAdminSubTab('symptoms')" class="py-2.5 px-4 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent flex items-center space-x-2">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>จัดการรายการอาการเสีย Master</span>
+                    </button>
+                </div>
+
+                <!-- SUB-TAB 1: Radios Management -->
+                <div id="adminSubTabRadios" class="space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800">จัดการข้อมูลอุปกรณ์ (Admin Panel)</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">เพิ่ม, แก้ไข หรือลบข้อมูลทะเบียนวิทยุสื่อสารในระบบ</p>
+                        </div>
+                        <button onclick="openRadioModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>เพิ่มวิทยุสื่อสารใหม่</span>
+                        </button>
+                    </div>
+
+                    <!-- Admin Table -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                <i class="fa-solid fa-table me-1"></i> รายชื่ออุปกรณ์วิทยุทั้งหมด
+                            </span>
+                            <input type="text" id="adminTableSearch" oninput="renderAdminTable()" placeholder="กรองข้อมูลในตาราง..." class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs w-48 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200">
+                                    <tr>
+                                        <th class="py-3 px-4">ชื่อวิทยุ / IMEI</th>
+                                        <th class="py-3 px-4">วันที่สั่งซื้อ</th>
+                                        <th class="py-3 px-4">เบอร์โทร & วันที่เปลี่ยนซิม</th>
+                                        <th class="py-3 px-4">จำนวนครั้งส่งซ่อม</th>
+                                        <th class="py-3 px-4">หมายเหตุ</th>
+                                        <th class="py-3 px-4 text-center">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminTableBody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 2: Symptoms Management -->
+                <div id="adminSubTabSymptoms" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800">จัดการ Master อาการเสีย</h2>
+                            <p class="text-xs text-slate-500 mt-1">กำหนดรายการตัวเลือกอาการเสียเพื่อให้เลือกดรอปดาวน์ในหน้าแจ้งส่งซ่อม</p>
+                        </div>
+
+                        <!-- Add New Symptom Input -->
+                        <form onsubmit="handleAddMasterSymptom(event)" class="flex gap-2 max-w-lg">
+                            <input type="text" id="newSymptomInput" required placeholder="เพิ่มรายการอาการเสีย เช่น 'ลำโพงไม่มีเสียง'" class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
+                                <i class="fa-solid fa-plus me-1"></i> เพิ่มรายการ
+                            </button>
+                        </form>
+
+                        <!-- Symptoms List -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden">
+                            <ul id="masterSymptomsList" class="divide-y divide-slate-100 text-sm">
+                                <!-- Rendered dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: Detail Modal -->
+    <div id="detailModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-info text-blue-600"></i>
+                    <span id="detailTitle">รายละเอียดวิทยุสื่อสาร</span>
+                </h3>
+                <button onclick="closeModal('detailModal')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4 text-sm" id="detailModalBody">
+                <!-- Content injected dynamically -->
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+                <button onclick="closeModal('detailModal')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium text-xs transition">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Admin Create/Edit Radio Modal -->
+    <div id="radioFormModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+                    <span id="radioModalTitle">เพิ่มข้อมูลวิทยุสื่อสารใหม่</span>
+                </h3>
+                <button onclick="closeModal('radioFormModal')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="radioForm" onsubmit="handleSaveRadio(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editRadioId">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อวิทยุ (RADIO NAME) <span class="text-rose-500">*</span></label>
+                        <input type="text" id="formRadioName" required placeholder="เช่น Radio-HQ-01" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">IMEI / SERIAL NUMBER <span class="text-rose-500">*</span></label>
+                        <input type="text" id="formImei" required placeholder="เช่น 864291048291029" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">วันเดือนปีที่สั่ง (ORDER DATE)</label>
+                        <input type="date" id="formOrderDate" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">เบอร์โทรศัพท์ (PHONE NUMBER)</label>
+                        <input type="text" id="formPhone" placeholder="เช่น 081-234-5678" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่เปลี่ยนซิมล่าสุด (SIM CHANGE DATE)</label>
+                    <input type="date" id="formSimDate" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Dynamic Repair History Section in Admin Form -->
+                <div class="border border-amber-200 bg-amber-50/50 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-amber-800">
+                            <i class="fa-solid fa-wrench me-1"></i> ประวัติการส่งซ่อม + อาการเสีย
+                        </label>
+                        <button type="button" onclick="addAdminRepairRow()" class="text-xs bg-amber-600 text-white font-medium px-2.5 py-1 rounded-lg hover:bg-amber-700 transition">
+                            + เพิ่มประวัติการซ่อม
+                        </button>
+                    </div>
+
+                    <div id="adminRepairEntriesContainer" class="space-y-3">
+                        <!-- Dynamic repair entries -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">หมายเหตุ (REMARKS)</label>
+                    <textarea id="formRemarks" rows="2" placeholder="ข้อมูลเพิ่มเติม เช่น ผู้ใช้งานปัจจุบัน, แผนก, หรือสถานที่ใช้งาน..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('radioFormModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 text-xs font-medium hover:bg-slate-50 transition">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 transition">
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        // ==========================================
+        // 1. FIREBASE CONFIGURATION & INITIALIZATION
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLRsapZFp8HTamGap1U7ATyKj68O1--jI",
+            authDomain: "walkie-talkie-d97ae.firebaseapp.com",
+            projectId: "walkie-talkie-d97ae",
+            storageBucket: "walkie-talkie-d97ae.firebasestorage.app",
+            messagingSenderId: "122431150048",
+            appId: "1:122431150048:web:58ea05911269094d45fd85"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // State variables
+        let radioList = [];
+        let masterSymptoms = ['เครื่องเปิดไม่ติด', 'ลำโพงไม่มีเสียง', 'ไมโครโฟนไม่ดัง', 'แบตเตอรี่เสื่อม', 'หน้าจอแตก', 'แท่นชาร์จเสีย'];
+        let isAdminLoggedIn = false;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadFromFirebase();
+            
+            // Set default date for repair form
+            const today = new Date().toISOString().split('T')[0];
+            const repairDateEl = document.getElementById('repairDateInput');
+            if (repairDateEl) repairDateEl.value = today;
+        });
+
+        // ==========================================
+        // 2. FIREBASE DATA SYNC FUNCTIONS
+        // ==========================================
+        async function loadFromFirebase() {
+            try {
+                // Fetch Radios from Firestore collection 'radios'
+                const radiosSnapshot = await db.collection('radios').get();
+                radioList = [];
+                radiosSnapshot.forEach(doc => {
+                    radioList.push(doc.data());
+                });
+
+                // Fetch Master Symptoms from Firestore document 'settings/master'
+                const settingsDoc = await db.collection('settings').doc('master').get();
+                if (settingsDoc.exists && settingsDoc.data().symptoms) {
+                    masterSymptoms = settingsDoc.data().symptoms;
+                } else {
+                    // Set default if not exists in DB yet
+                    await db.collection('settings').doc('master').set({ symptoms: masterSymptoms });
+                }
+
+                renderAllRadios();
+                populateRadioDropdowns();
+                renderMasterSymptoms();
+            } catch (error) {
+                console.error("Error loading data from Firebase: ", error);
+                alert("ไม่สามารถเชื่อมต่อฐานข้อมูล Firebase ได้ กรุณาตรวจสอบการตั้งค่า Config");
+            }
+        }
+
+        async function saveSymptomsToFirebase() {
+            try {
+                await db.collection('settings').doc('master').set({ symptoms: masterSymptoms });
+            } catch (error) {
+                console.error("Error saving symptoms: ", error);
+            }
+        }
+
+        // Navigation Switcher
+        function switchMainTab(tabKey) {
+            // Strict Logout Rule: Logout admin if switching away from admin tab
+            if (isAdminLoggedIn && tabKey !== 'admin') {
+                isAdminLoggedIn = false;
+                document.getElementById('btnLogout').classList.add('hidden');
+                document.getElementById('adminLoginCard').classList.remove('hidden');
+                document.getElementById('adminContent').classList.add('hidden');
+            }
+
+            // Tabs UI update
+            document.getElementById('navAllRadios').classList.toggle('active', tabKey === 'allRadios');
+            document.getElementById('navRepair').classList.toggle('active', tabKey === 'repair');
+            document.getElementById('navAdmin').classList.toggle('active', tabKey === 'admin');
+
+            // Sections visibility
+            document.getElementById('secAllRadios').classList.toggle('hidden', tabKey !== 'allRadios');
+            document.getElementById('secRepair').classList.toggle('hidden', tabKey !== 'repair');
+            document.getElementById('secAdmin').classList.toggle('hidden', tabKey !== 'admin');
+
+            if (tabKey === 'allRadios') {
+                renderAllRadios();
+                populateRadioDropdowns();
+            } else if (tabKey === 'repair') {
+                populateRadioDropdowns();
+            } else if (tabKey === 'admin' && isAdminLoggedIn) {
+                renderAdminTable();
+            }
+        }
+
+        function switchAdminSubTab(subTabKey) {
+            const isRadios = subTabKey === 'radios';
+            document.getElementById('adminSubTabRadios').classList.toggle('hidden', !isRadios);
+            document.getElementById('adminSubTabSymptoms').classList.toggle('hidden', isRadios);
+
+            document.getElementById('adminSubNavRadios').className = isRadios 
+                ? 'py-2.5 px-4 font-semibold text-sm text-blue-600 border-b-2 border-blue-600 flex items-center space-x-2'
+                : 'py-2.5 px-4 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent flex items-center space-x-2';
+            
+            document.getElementById('adminSubNavSymptoms').className = !isRadios 
+                ? 'py-2.5 px-4 font-semibold text-sm text-blue-600 border-b-2 border-blue-600 flex items-center space-x-2'
+                : 'py-2.5 px-4 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent flex items-center space-x-2';
+        }
+
+        // Admin Auth
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if (user === 'admin' && pass === '20033457') {
+                isAdminLoggedIn = true;
+                document.getElementById('adminLoginCard').classList.add('hidden');
+                document.getElementById('adminContent').classList.remove('hidden');
+                document.getElementById('btnLogout').classList.remove('hidden');
+                renderAdminTable();
+            } else {
+                alert('Username หรือ Password ไม่ถูกต้อง!');
+            }
+        }
+
+        function adminLogout() {
+            isAdminLoggedIn = false;
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('btnLogout').classList.add('hidden');
+            document.getElementById('adminLoginCard').classList.remove('hidden');
+            document.getElementById('adminContent').classList.add('hidden');
+            switchMainTab('allRadios');
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        // Populate Dropdowns
+        function populateRadioDropdowns() {
+            const selectDropdown = document.getElementById('selectRadioDropdown');
+            const repairSelect = document.getElementById('repairSelectRadio');
+
+            let optionsHtml = '<option value="">-- เลือกชื่อวิทยุสื่อสาร --</option>';
+            radioList.forEach(item => {
+                optionsHtml += `<option value="${item.id}">${item.name} (${item.imei})</option>`;
+            });
+
+            if (selectDropdown) selectDropdown.innerHTML = '<option value="">-- หรือเลือกชื่อวิทยุเพื่อดูข้อมูล --</option>' + optionsHtml.replace('<option value="">-- เลือกชื่อวิทยุสื่อสาร --</option>', '');
+            if (repairSelect) repairSelect.innerHTML = optionsHtml;
+        }
+
+        // Render Cards (Main View)
+        function renderAllRadios(itemsToRender = radioList) {
+            const grid = document.getElementById('radioCardsGrid');
+            const emptyState = document.getElementById('emptySearchState');
+            const badge = document.getElementById('radioTotalBadge');
+
+            badge.innerText = `ทั้งหมด ${itemsToRender.length} เครื่อง`;
+
+            if (itemsToRender.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = itemsToRender.map(item => {
+                const repairCount = item.repairs ? item.repairs.length : 0;
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                                        <span>${escapeHtml(item.name)}</span>
+                                    </h3>
+                                    <p class="text-xs text-slate-400 font-mono mt-0.5">IMEI: ${escapeHtml(item.imei)}</p>
+                                </div>
+                                <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-1 rounded-full flex items-center space-x-1">
+                                    <i class="fa-solid fa-wrench text-amber-600 text-xs"></i>
+                                    <span>ซ่อม ${repairCount} ครั้ง</span>
+                                </span>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <span class="text-slate-400 block">เบอร์โทรศัพท์:</span>
+                                    <span class="font-medium text-slate-700">${item.phone ? escapeHtml(item.phone) : '-'}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">เปลี่ยนซิมล่าสุด:</span>
+                                    <span class="font-medium text-slate-700">${item.simDate ? formatDate(item.simDate) : '-'}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">วันที่สั่งซื้อ:</span>
+                                    <span class="font-medium text-slate-700">${item.orderDate ? formatDate(item.orderDate) : '-'}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">หมายเหตุ:</span>
+                                    <span class="font-medium text-slate-700 truncate block" title="${escapeHtml(item.remarks || '')}">${item.remarks ? escapeHtml(item.remarks) : '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                            <button onclick="openDetailModal('${item.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium py-2 rounded-xl transition flex items-center justify-center space-x-1">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>ดูข้อมูลทั้งหมด</span>
+                            </button>
+                            <button onclick="quickOpenRepair('${item.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-medium py-2 px-3 rounded-xl transition flex items-center space-x-1">
+                                <i class="fa-solid fa-wrench"></i>
+                                <span>แจ้งซ่อม</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Filtering
+        function filterRadios() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filtered = radioList.filter(item => 
+                item.name.toLowerCase().includes(query) ||
+                item.imei.toLowerCase().includes(query) ||
+                (item.phone && item.phone.toLowerCase().includes(query))
+            );
+            renderAllRadios(filtered);
+        }
+
+        function onDropdownSelect(id) {
+            if (!id) {
+                renderAllRadios();
+                return;
+            }
+            openDetailModal(id);
+        }
+
+        // Detail Modal
+        function openDetailModal(id) {
+            const item = radioList.find(r => r.id === id);
+            if (!item) return;
+
+            document.getElementById('detailTitle').innerText = item.name;
+            const repairs = item.repairs || [];
+
+            let repairLogsHtml = repairs.length === 0 
+                ? '<p class="text-xs text-slate-400 italic">ไม่มีประวัติการส่งซ่อม</p>'
+                : repairs.map((rep, idx) => `
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                        <div class="flex items-center justify-between font-semibold text-xs text-amber-800">
+                            <span>ครั้งที่ ${idx + 1}: วันที่ ${formatDate(rep.date)}</span>
+                        </div>
+                        <p class="text-xs text-slate-600">${escapeHtml(rep.symptoms || rep.symptom || '-')}</p>
+                    </div>
+                `).join('');
+
+            document.getElementById('detailModalBody').innerHTML = `
+                <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-2">
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><span class="text-slate-400">ชื่อวิทยุ:</span> <p class="font-semibold text-slate-800">${escapeHtml(item.name)}</p></div>
+                        <div><span class="text-slate-400">IMEI:</span> <p class="font-semibold text-slate-800 font-mono">${escapeHtml(item.imei)}</p></div>
+                        <div><span class="text-slate-400">วันเดือนปีที่สั่ง:</span> <p class="font-medium text-slate-700">${item.orderDate ? formatDate(item.orderDate) : '-'}</p></div>
+                        <div><span class="text-slate-400">เบอร์โทรศัพท์:</span> <p class="font-medium text-slate-700">${item.phone ? escapeHtml(item.phone) : '-'}</p></div>
+                        <div class="col-span-2"><span class="text-slate-400">วันที่เปลี่ยนซิมล่าสุด:</span> <p class="font-medium text-slate-700">${item.simDate ? formatDate(item.simDate) : '-'}</p></div>
+                        <div class="col-span-2"><span class="text-slate-400">หมายเหตุ:</span> <p class="font-medium text-slate-700">${item.remarks ? escapeHtml(item.remarks) : '-'}</p></div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 class="font-bold text-xs text-slate-700 flex items-center space-x-1">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
+                        <span>ประวัติการส่งซ่อม (${repairs.length} ครั้ง)</span>
+                    </h4>
+                    <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        ${repairLogsHtml}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        // Quick Open Repair Request
+        function quickOpenRepair(id) {
+            switchMainTab('repair');
+            const selectEl = document.getElementById('repairSelectRadio');
+            if (selectEl) {
+                selectEl.value = id;
+                onRepairSelectRadioChange();
+            }
+        }
+
+        // Repair Request Actions
+        function onRepairSelectRadioChange() {
+            const id = document.getElementById('repairSelectRadio').value;
+            const summaryCard = document.getElementById('repairRadioSummary');
+            const item = radioList.find(r => r.id === id);
+
+            if (!item) {
+                summaryCard.classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('summaryImei').innerText = item.imei;
+            document.getElementById('summaryPhone').innerText = item.phone || '-';
+            document.getElementById('summaryRepairCount').innerText = `${(item.repairs || []).length} ครั้ง`;
+            summaryCard.classList.remove('hidden');
+
+            // Reset symptoms list with 1 default row if empty
+            const container = document.getElementById('repairSymptomsContainer');
+            if (container.children.length === 0) {
+                addRepairSymptomDropdownRow();
+            }
+        }
+
+        function addRepairSymptomDropdownRow() {
+            const container = document.getElementById('repairSymptomsContainer');
+            const rowId = 'symptomRow_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+            let symptomOptions = masterSymptoms.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'flex items-center space-x-2';
+            row.innerHTML = `
+                <select class="repair-symptom-select flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="">-- เลือกอาการเสีย --</option>
+                    ${symptomOptions}
+                </select>
+                <button type="button" onclick="removeSymptomRow('${rowId}')" class="text-rose-500 hover:text-rose-700 p-2 text-xs">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeSymptomRow(id) {
+            const row = document.getElementById(id);
+            if (row) row.remove();
+        }
+
+        function resetRepairForm() {
+            document.getElementById('repairForm').reset();
+            document.getElementById('repairRadioSummary').classList.add('hidden');
+            document.getElementById('repairSymptomsContainer').innerHTML = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('repairDateInput').value = today;
+        }
+
+        async function handleSaveRepairRequest(e) {
+            e.preventDefault();
+            const radioId = document.getElementById('repairSelectRadio').value;
+            const repairDate = document.getElementById('repairDateInput').value;
+            const detail = document.getElementById('repairDetailInput').value.trim();
+
+            if (!radioId) {
+                alert('กรุณาเลือกอุปกรณ์วิทยุสื่อสาร');
+                return;
+            }
+
+            // Gather symptoms from dropdowns
+            const symptomSelects = document.querySelectorAll('.repair-symptom-select');
+            let selectedSymptoms = [];
+            symptomSelects.forEach(s => {
+                if (s.value) selectedSymptoms.push(s.value);
+            });
+
+            if (selectedSymptoms.length === 0 && !detail) {
+                alert('กรุณาเลือกอาการเสียอย่างน้อย 1 รายการ หรือพิมพ์ระบุรายละเอียด');
+                return;
+            }
+
+            let fullSymptomText = selectedSymptoms.join(', ');
+            if (detail) {
+                fullSymptomText += (fullSymptomText ? ' (' + detail + ')' : detail);
+            }
+
+            const radio = radioList.find(r => r.id === radioId);
+            if (radio) {
+                if (!radio.repairs) radio.repairs = [];
+                radio.repairs.push({
+                    date: repairDate,
+                    symptoms: fullSymptomText
+                });
+
+                try {
+                    // Save updated radio data to Firestore
+                    await db.collection('radios').doc(radio.id).set(radio);
+                    alert('บันทึกแจ้งส่งซ่อมเรียบร้อยแล้ว!');
+                    resetRepairForm();
+                    switchMainTab('allRadios');
+                } catch (error) {
+                    console.error("Error saving repair request: ", error);
+                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Firebase");
+                }
+            }
+        }
+
+        // Admin Table & Forms
+        function renderAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            const searchVal = (document.getElementById('adminTableSearch')?.value || '').toLowerCase();
+
+            const filtered = radioList.filter(item => 
+                item.name.toLowerCase().includes(searchVal) ||
+                item.imei.toLowerCase().includes(searchVal) ||
+                (item.phone && item.phone.toLowerCase().includes(searchVal))
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400 text-xs">ไม่มีข้อมูลวิทยุสื่อสาร</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="openDetailModal('${item.id}')">
+                    <td class="py-3 px-4">
+                        <div class="font-bold text-slate-800">${escapeHtml(item.name)}</div>
+                        <div class="text-xs text-slate-400 font-mono">IMEI: ${escapeHtml(item.imei)}</div>
+                    </td>
+                    <td class="py-3 px-4 text-xs text-slate-600">${item.orderDate ? formatDate(item.orderDate) : '-'}</td>
+                    <td class="py-3 px-4 text-xs">
+                        <div class="text-slate-700">${item.phone ? escapeHtml(item.phone) : '-'}</div>
+                        <div class="text-slate-400">เปลี่ยนซิม: ${item.simDate ? formatDate(item.simDate) : '-'}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium">
+                            ส่งซ่อม ${(item.repairs || []).length} ครั้ง
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-xs text-slate-500 max-w-xs truncate">${item.remarks ? escapeHtml(item.remarks) : '-'}</td>
+                    <td class="py-3 px-4 text-center" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="openRadioModal('${item.id}')" class="text-blue-600 hover:text-blue-800 p-1">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteRadio('${item.id}')" class="text-rose-500 hover:text-rose-700 p-1">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openRadioModal(id = null) {
+            document.getElementById('radioForm').reset();
+            document.getElementById('adminRepairEntriesContainer').innerHTML = '';
+
+            if (id) {
+                const item = radioList.find(r => r.id === id);
+                if (item) {
+                    document.getElementById('radioModalTitle').innerText = 'แก้ไขข้อมูลวิทยุสื่อสาร';
+                    document.getElementById('editRadioId').value = item.id;
+                    document.getElementById('formRadioName').value = item.name;
+                    document.getElementById('formImei').value = item.imei;
+                    document.getElementById('formOrderDate').value = item.orderDate || '';
+                    document.getElementById('formPhone').value = item.phone || '';
+                    document.getElementById('formSimDate').value = item.simDate || '';
+                    document.getElementById('formRemarks').value = item.remarks || '';
+
+                    // Populate existing repair entries
+                    if (item.repairs && item.repairs.length > 0) {
+                        item.repairs.forEach(rep => addAdminRepairRow(rep.date, rep.symptoms || rep.symptom));
+                    }
+                }
+            } else {
+                document.getElementById('radioModalTitle').innerText = 'เพิ่มข้อมูลวิทยุสื่อสารใหม่';
+                document.getElementById('editRadioId').value = '';
+            }
+
+            document.getElementById('radioFormModal').classList.remove('hidden');
+        }
+
+        function addAdminRepairRow(dateVal = '', symptomVal = '') {
+            const container = document.getElementById('adminRepairEntriesContainer');
+            const rowIdx = container.children.length + 1;
+            const rowId = 'adminRepair_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'bg-white p-3 rounded-xl border border-amber-200 space-y-2';
+            row.innerHTML = `
+                <div class="flex items-center justify-between text-xs font-semibold text-amber-800">
+                    <span>ครั้งที่ ${rowIdx}:</span>
+                    <button type="button" onclick="removeAdminRepairRow('${rowId}')" class="text-rose-500 hover:text-rose-700">
+                        <i class="fa-solid fa-trash-can me-1"></i> ลบรายการนี้
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input type="date" value="${dateVal}" class="admin-repair-date px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-500">
+                    <input type="text" value="${escapeHtml(symptomVal)}" placeholder="ระบุอาการเสีย / รายละเอียดการส่งซ่อม..." class="admin-repair-symptom sm:col-span-2 px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-500">
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeAdminRepairRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) row.remove();
+        }
+
+        async function handleSaveRadio(e) {
+            e.preventDefault();
+            const id = document.getElementById('editRadioId').value;
+            const name = document.getElementById('formRadioName').value.trim();
+            const imei = document.getElementById('formImei').value.trim();
+            const orderDate = document.getElementById('formOrderDate').value;
+            const phone = document.getElementById('formPhone').value.trim();
+            const simDate = document.getElementById('formSimDate').value;
+            const remarks = document.getElementById('formRemarks').value.trim();
+
+            // Gather repair rows from admin form
+            const repairRows = document.querySelectorAll('#adminRepairEntriesContainer > div');
+            const repairs = [];
+            repairRows.forEach(row => {
+                const d = row.querySelector('.admin-repair-date').value;
+                const s = row.querySelector('.admin-repair-symptom').value.trim();
+                if (d || s) {
+                    repairs.push({ date: d, symptoms: s });
+                }
+            });
+
+            let radioObj;
+            let targetId = id;
+
+            if (targetId) {
+                // Edit existing
+                radioObj = { id: targetId, name, imei, orderDate, phone, simDate, remarks, repairs };
+                const idx = radioList.findIndex(r => r.id === targetId);
+                if (idx !== -1) {
+                    radioList[idx] = radioObj;
+                }
+            } else {
+                // Create new
+                targetId = 'radio_' + Date.now();
+                radioObj = { id: targetId, name, imei, orderDate, phone, simDate, remarks, repairs };
+                radioList.unshift(radioObj);
+            }
+
+            try {
+                // Save to Firestore
+                await db.collection('radios').doc(targetId).set(radioObj);
+                closeModal('radioFormModal');
+                renderAdminTable();
+                renderAllRadios();
+                populateRadioDropdowns();
+                alert('บันทึกข้อมูลวิทยุสื่อสารเรียบร้อยแล้ว!');
+            } catch (error) {
+                console.error("Error saving radio: ", error);
+                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Firebase");
+            }
+        }
+
+        async function deleteRadio(id) {
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลวิทยุสื่อสารเครื่องนี้?')) {
+                try {
+                    await db.collection('radios').doc(id).delete();
+                    radioList = radioList.filter(r => r.id !== id);
+                    renderAdminTable();
+                    renderAllRadios();
+                    populateRadioDropdowns();
+                } catch (error) {
+                    console.error("Error deleting radio: ", error);
+                    alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+                }
+            }
+        }
+
+        // Master Symptoms
+        function renderMasterSymptoms() {
+            const list = document.getElementById('masterSymptomsList');
+            if (!list) return;
+
+            if (masterSymptoms.length === 0) {
+                list.innerHTML = `<li class="p-4 text-center text-slate-400 text-xs">ไม่มีรายการอาการเสีย Master</li>`;
+                return;
+            }
+
+            list.innerHTML = masterSymptoms.map((sym, idx) => `
+                <li class="p-3 flex items-center justify-between hover:bg-slate-50 transition">
+                    <span class="text-slate-700 font-medium">${escapeHtml(sym)}</span>
+                    <button onclick="deleteMasterSymptom(${idx})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1">
+                        <i class="fa-solid fa-trash-can"></i> ลบ
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        async function handleAddMasterSymptom(e) {
+            e.preventDefault();
+            const input = document.getElementById('newSymptomInput');
+            const val = input.value.trim();
+            if (val && !masterSymptoms.includes(val)) {
+                masterSymptoms.push(val);
+                await saveSymptomsToFirebase();
+                renderMasterSymptoms();
+                input.value = '';
+            }
+        }
+
+        async function deleteMasterSymptom(idx) {
+            if (confirm('ต้องการลบอาการเสียนี้จากรายการ Master หรือไม่?')) {
+                masterSymptoms.splice(idx, 1);
+                await saveSymptomsToFirebase();
+                renderMasterSymptoms();
+            }
+        }
+
+        // Helpers
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const yearTH = parseInt(parts[0]) + 543;
+                return `${parts[2]}/${parts[1]}/${yearTH}`;
+            }
+            return dateStr;
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
