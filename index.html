@@ -12,9 +12,9 @@
     <!-- Google Fonts: Prompt -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase App & Firestore SDK (Compat Version) -->
+    <!-- Firebase App & Realtime Database SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
         body { font-family: 'Prompt', sans-serif; }
@@ -36,7 +36,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">RadioAsset Pro</h1>
-                    <p class="text-xs text-slate-400">ระบบจัดการทะเบียนข้อมูลวิทยุสื่อสารองค์กร (Firebase)</p>
+                    <p class="text-xs text-slate-400">ระบบจัดการทะเบียนข้อมูลวิทยุสื่อสารองค์กร (Realtime DB)</p>
                 </div>
             </div>
             
@@ -421,15 +421,16 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCLRsapZFp8HTamGap1U7ATyKj68O1--jI",
             authDomain: "walkie-talkie-d97ae.firebaseapp.com",
+            databaseURL: "https://walkie-talkie-d97ae-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "walkie-talkie-d97ae",
             storageBucket: "walkie-talkie-d97ae.firebasestorage.app",
             messagingSenderId: "122431150048",
             appId: "1:122431150048:web:58ea05911269094d45fd85"
         };
 
-        // Initialize Firebase
+        // Initialize Firebase Realtime Database
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const db = firebase.database();
 
         // State variables
         let radioList = [];
@@ -447,24 +448,25 @@
         });
 
         // ==========================================
-        // 2. FIREBASE DATA SYNC FUNCTIONS
+        // 2. FIREBASE DATA SYNC FUNCTIONS (Realtime DB)
         // ==========================================
         async function loadFromFirebase() {
             try {
-                // Fetch Radios from Firestore collection 'radios'
-                const radiosSnapshot = await db.collection('radios').get();
+                // Fetch Radios from Realtime Database 'radios'
+                const radiosSnapshot = await db.ref('radios').once('value');
                 radioList = [];
-                radiosSnapshot.forEach(doc => {
-                    radioList.push(doc.data());
-                });
+                if (radiosSnapshot.exists()) {
+                    radiosSnapshot.forEach(childSnapshot => {
+                        radioList.push(childSnapshot.val());
+                    });
+                }
 
-                // Fetch Master Symptoms from Firestore document 'settings/master'
-                const settingsDoc = await db.collection('settings').doc('master').get();
-                if (settingsDoc.exists && settingsDoc.data().symptoms) {
-                    masterSymptoms = settingsDoc.data().symptoms;
+                // Fetch Master Symptoms from Realtime Database 'settings/master'
+                const settingsSnap = await db.ref('settings/master').once('value');
+                if (settingsSnap.exists() && settingsSnap.val().symptoms) {
+                    masterSymptoms = settingsSnap.val().symptoms;
                 } else {
-                    // Set default if not exists in DB yet
-                    await db.collection('settings').doc('master').set({ symptoms: masterSymptoms });
+                    await db.ref('settings/master').set({ symptoms: masterSymptoms });
                 }
 
                 renderAllRadios();
@@ -478,7 +480,7 @@
 
         async function saveSymptomsToFirebase() {
             try {
-                await db.collection('settings').doc('master').set({ symptoms: masterSymptoms });
+                await db.ref('settings/master').set({ symptoms: masterSymptoms });
             } catch (error) {
                 console.error("Error saving symptoms: ", error);
             }
@@ -817,8 +819,8 @@
                 });
 
                 try {
-                    // Save updated radio data to Firestore
-                    await db.collection('radios').doc(radio.id).set(radio);
+                    // Save updated radio data to Realtime DB
+                    await db.ref('radios/' + radio.id).set(radio);
                     alert('บันทึกแจ้งส่งซ่อมเรียบร้อยแล้ว!');
                     resetRepairForm();
                     switchMainTab('allRadios');
@@ -972,8 +974,8 @@
             }
 
             try {
-                // Save to Firestore
-                await db.collection('radios').doc(targetId).set(radioObj);
+                // Save to Realtime DB
+                await db.ref('radios/' + targetId).set(radioObj);
                 closeModal('radioFormModal');
                 renderAdminTable();
                 renderAllRadios();
@@ -988,7 +990,7 @@
         async function deleteRadio(id) {
             if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลวิทยุสื่อสารเครื่องนี้?')) {
                 try {
-                    await db.collection('radios').doc(id).delete();
+                    await db.ref('radios/' + id).remove();
                     radioList = radioList.filter(r => r.id !== id);
                     renderAdminTable();
                     renderAllRadios();
