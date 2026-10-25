@@ -344,7 +344,7 @@
     </main>
 
     <!-- MODAL 1: Detail Modal -->
-    <div id="detailModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="detailModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-700 text-slate-100">
             <div class="bg-slate-900 text-white p-5 border-b border-slate-700 flex items-center justify-between sticky top-0 z-10">
                 <h3 class="font-bold text-lg sm:text-xl flex items-center space-x-2">
@@ -369,7 +369,7 @@
     </div>
 
     <!-- MODAL 2: Admin Create/Edit Radio Modal -->
-    <div id="radioFormModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="radioFormModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700 text-slate-100">
             <div class="bg-slate-900 text-white p-5 border-b border-slate-700 flex items-center justify-between sticky top-0 z-10">
                 <h3 class="font-bold text-base sm:text-lg flex items-center space-x-2">
@@ -453,7 +453,7 @@
     </div>
 
     <!-- MODAL 3: Modern Custom Confirm Modal -->
-    <div id="customConfirmModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="customConfirmModal" class="hidden fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center p-4">
         <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-700 text-slate-100">
             <div class="bg-slate-900 text-white p-4 flex items-center space-x-2 border-b border-slate-700">
                 <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg"></i>
@@ -468,6 +468,24 @@
                 </button>
                 <button type="button" onclick="closeCustomConfirm(true)" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium text-xs transition shadow-sm">
                     ยืนยันลบ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Custom Notification Modal (Replaces browser alert) -->
+    <div id="customAlertModal" class="hidden fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-700 text-slate-100">
+            <div class="bg-slate-900 text-white p-4 flex items-center space-x-2 border-b border-slate-700">
+                <i id="customAlertIcon" class="fa-solid fa-circle-check text-blue-400 text-lg"></i>
+                <h3 id="customAlertTitle" class="font-bold text-base">แจ้งเตือนระบบ</h3>
+            </div>
+            <div class="p-6 text-sm text-slate-200" id="customAlertMessage">
+                ข้อความแจ้งเตือน...
+            </div>
+            <div class="p-3 bg-slate-900 border-t border-slate-700 flex justify-end">
+                <button type="button" onclick="closeCustomAlert()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-xs transition shadow-sm">
+                    ตกลง
                 </button>
             </div>
         </div>
@@ -498,6 +516,23 @@
         let masterModels = ['Hytera', 'Motorola', 'Icom', 'Baofeng', 'Kenwood', 'General'];
         let isAdminLoggedIn = false;
         let confirmCallback = null;
+
+        // Custom Notification / Alert Handler (Replaces browser alert)
+        function showNotification(message, title = 'แจ้งเตือนระบบ', type = 'success') {
+            document.getElementById('customAlertMessage').textContent = message;
+            document.getElementById('customAlertTitle').textContent = title;
+            const iconEl = document.getElementById('customAlertIcon');
+            if (type === 'error') {
+                iconEl.className = 'fa-solid fa-triangle-exclamation text-rose-400 text-lg';
+            } else {
+                iconEl.className = 'fa-solid fa-circle-check text-blue-400 text-lg';
+            }
+            document.getElementById('customAlertModal').classList.remove('hidden');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').classList.add('hidden');
+        }
 
         // Custom Confirm Dialog Handler
         function showCustomConfirm(message, callback) {
@@ -564,7 +599,7 @@
                 renderMasterModels();
             } catch (error) {
                 console.error("Error loading data from Firebase: ", error);
-                alert("ไม่สามารถเชื่อมต่อฐานข้อมูล Firebase ได้ กรุณาตรวจสอบการตั้งค่า Config");
+                showNotification("ไม่สามารถเชื่อมต่อฐานข้อมูล Firebase ได้ กรุณาตรวจสอบการตั้งค่า Config", "ข้อผิดพลาด", "error");
             }
         }
 
@@ -650,7 +685,7 @@
                 clearLoginInputs();
                 renderAdminTable();
             } else {
-                alert('Username หรือ Password ไม่ถูกต้อง!');
+                showNotification('Username หรือ Password ไม่ถูกต้อง!', 'เข้าสู่ระบบไม่สำเร็จ', 'error');
             }
         }
 
@@ -907,7 +942,7 @@
             const detail = document.getElementById('repairDetailInput').value.trim();
 
             if (!radioId) {
-                alert('กรุณาเลือกอุปกรณ์วิทยุสื่อสาร');
+                showNotification('กรุณาเลือกอุปกรณ์วิทยุสื่อสาร', 'คำเตือน', 'error');
                 return;
             }
 
@@ -919,7 +954,7 @@
             });
 
             if (selectedSymptoms.length === 0 && !detail) {
-                alert('กรุณาเลือกอาการเสียอย่างน้อย 1 รายการ หรือพิมพ์ระบุรายละเอียด');
+                showNotification('กรุณาเลือกอาการเสียอย่างน้อย 1 รายการ หรือพิมพ์ระบุรายละเอียด', 'คำเตือน', 'error');
                 return;
             }
 
@@ -939,12 +974,12 @@
                 try {
                     // Save updated radio data to Realtime DB
                     await db.ref('radios/' + radio.id).set(radio);
-                    alert('บันทึกแจ้งส่งซ่อมเรียบร้อยแล้ว!');
+                    showNotification('บันทึกแจ้งส่งซ่อมเรียบร้อยแล้ว!', 'สำเร็จ');
                     resetRepairForm();
                     switchMainTab('allRadios');
                 } catch (error) {
                     console.error("Error saving repair request: ", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Firebase");
+                    showNotification("เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Firebase", "ข้อผิดพลาด", "error");
                 }
             }
         }
@@ -1102,10 +1137,10 @@
                 renderAdminTable();
                 renderAllRadios();
                 populateRadioDropdowns();
-                alert('บันทึกข้อมูลวิทยุสื่อสารเรียบร้อยแล้ว!');
+                showNotification('บันทึกข้อมูลวิทยุสื่อสารเรียบร้อยแล้ว!', 'สำเร็จ');
             } catch (error) {
                 console.error("Error saving radio: ", error);
-                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Firebase");
+                showNotification("เกิดข้อผิดพลาดในการบันทึกข้อมูลลง Firebase", "ข้อผิดพลาด", "error");
             }
         }
 
@@ -1117,9 +1152,10 @@
                     renderAdminTable();
                     renderAllRadios();
                     populateRadioDropdowns();
+                    showNotification('ลบข้อมูลวิทยุสื่อสารเรียบร้อยแล้ว!', 'สำเร็จ');
                 } catch (error) {
                     console.error("Error deleting radio: ", error);
-                    alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+                    showNotification("เกิดข้อผิดพลาดในการลบข้อมูล", "ข้อผิดพลาด", "error");
                 }
             });
         }
@@ -1155,6 +1191,7 @@
                 renderMasterModels();
                 populateModelDropdowns();
                 input.value = '';
+                showNotification('เพิ่มรุ่นวิทยุ Master เรียบร้อยแล้ว!', 'สำเร็จ');
             }
         }
 
@@ -1164,6 +1201,7 @@
                 await saveMasterToFirebase();
                 renderMasterModels();
                 populateModelDropdowns();
+                showNotification('ลบรุ่นวิทยุเรียบร้อยแล้ว!', 'สำเร็จ');
             });
         }
 
@@ -1197,6 +1235,7 @@
                 await saveMasterToFirebase();
                 renderMasterSymptoms();
                 input.value = '';
+                showNotification('เพิ่มรายการอาการเสีย Master เรียบร้อยแล้ว!', 'สำเร็จ');
             }
         }
 
@@ -1205,6 +1244,7 @@
                 masterSymptoms.splice(idx, 1);
                 await saveMasterToFirebase();
                 renderMasterSymptoms();
+                showNotification('ลบรายการอาการเสียเรียบร้อยแล้ว!', 'สำเร็จ');
             });
         }
 
