@@ -12,54 +12,56 @@
     <!-- Google Fonts: Prompt -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase App & Realtime Database SDK (Compat Version) -->
+    <!-- Firebase App & Firestore SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
         body { font-family: 'Prompt', sans-serif; }
         .tab-btn.active {
-            background-color: #3b82f6;
+            background-color: #2563eb;
             color: #ffffff;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-900 min-h-screen text-slate-100">
 
     <!-- Navbar -->
-    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchMainTab('allRadios')">
-                <div class="bg-blue-600 p-2 rounded-lg">
-                    <i class="fa-solid me-0 fa-walkie-talkie text-xl text-white"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight">RadioAsset Pro</h1>
-                    <p class="text-xs text-slate-400">ระบบจัดการทะเบียนข้อมูลวิทยุสื่อสารองค์กร (Realtime DB)</p>
+    <header class="bg-slate-950 text-white shadow-xl sticky top-0 z-40 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-16 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 cursor-pointer w-full sm:w-auto justify-between sm:justify-start" onclick="switchMainTab('allRadios')">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-2 rounded-xl shadow-lg">
+                        <i class="fa-solid fa-walkie-talkie text-lg sm:text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base sm:text-lg leading-tight text-white">RadioAsset Pro</h1>
+                        <p class="text-[11px] text-slate-400 hidden sm:block">ระบบจัดการทะเบียนข้อมูลวิทยุสื่อสารองค์กร (Firebase)</p>
+                    </div>
                 </div>
             </div>
             
             <!-- Navigation Tabs -->
-            <div class="flex items-center space-x-2">
-                <nav class="flex space-x-1 bg-slate-800 p-1 rounded-xl">
-                    <button id="navAllRadios" onclick="switchMainTab('allRadios')" class="tab-btn active px-4 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+            <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end overflow-x-auto pb-1 sm:pb-0">
+                <nav class="flex space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                    <button id="navAllRadios" onclick="switchMainTab('allRadios')" class="tab-btn active px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
                         <i class="fa-solid fa-list-ul"></i>
-                        <span>รายการวิทยุทั้งหมด</span>
+                        <span>รายการวิทยุ</span>
                     </button>
                     <!-- Hidden tab for repair request view -->
-                    <button id="navRepair" onclick="switchMainTab('repair')" class="hidden tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                    <button id="navRepair" onclick="switchMainTab('repair')" class="hidden tab-btn px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
                         <i class="fa-solid fa-wrench"></i>
                         <span>แจ้งส่งซ่อม</span>
                     </button>
-                    <button id="navAdmin" onclick="switchMainTab('admin')" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                    <button id="navAdmin" onclick="switchMainTab('admin')" class="tab-btn px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
                         <i class="fa-solid fa-gear"></i>
-                        <span>จัดการข้อมูล (Admin)</span>
+                        <span>Admin</span>
                     </button>
                 </nav>
-                <button id="btnLogout" onclick="adminLogout()" class="hidden bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-1 border border-rose-500/30">
+                <button id="btnLogout" onclick="adminLogout()" class="hidden bg-rose-600/20 text-rose-300 hover:bg-rose-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-1 border border-rose-500/30 whitespace-nowrap">
                     <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>ออกจากระบบ</span>
+                    <span class="hidden sm:inline">ออกจากระบบ</span>
                 </button>
             </div>
         </div>
@@ -71,18 +73,18 @@
         <!-- TAB 1: รายการวิทยุทั้งหมด & ค้นหา -->
         <section id="secAllRadios" class="space-y-6">
             <!-- Search & Filter Controls -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800 flex items-center space-x-2">
-                            <i class="fa-solid fa-walkie-talkie text-blue-600"></i>
+                        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-walkie-talkie text-blue-500"></i>
                             <span>ค้นหาและตรวจสอบข้อมูลวิทยุสื่อสาร</span>
                         </h2>
-                        <p class="text-xs text-slate-500 mt-1">ค้นหาด้วย ชื่อ, หมายเลข IMEI, เบอร์โทรศัพท์ หรือเลือกจากดรอปดาวน์</p>
+                        <p class="text-xs text-slate-400 mt-1">ค้นหาด้วย ชื่อ, รุ่น, หมายเลข IMEI, เบอร์โทรศัพท์ หรือเลือกจากดรอปดาวน์</p>
                     </div>
                     
                     <div class="flex items-center space-x-2">
-                        <span id="radioTotalBadge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
+                        <span id="radioTotalBadge" class="bg-blue-900/60 text-blue-300 border border-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
                             ทั้งหมด 0 เครื่อง
                         </span>
                     </div>
@@ -94,12 +96,12 @@
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </div>
-                        <input type="text" id="searchInput" oninput="filterRadios()" placeholder="พิมพ์ค้นหาด้วย ชื่อ / IMEI / เบอร์โทรศัพท์..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" id="searchInput" oninput="filterRadios()" placeholder="พิมพ์ค้นหาด้วย ชื่อ / รุ่น / IMEI / เบอร์โทร..." class="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
                     <!-- Dropdown Select -->
                     <div class="relative">
-                        <select id="selectRadioDropdown" onchange="onDropdownSelect(this.value)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="selectRadioDropdown" onchange="onDropdownSelect(this.value)" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">-- หรือเลือกชื่อวิทยุเพื่อดูข้อมูล --</option>
                         </select>
                     </div>
@@ -110,59 +112,63 @@
             <div id="radioCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Cards render dynamically -->
             </div>
-            <div id="emptySearchState" class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
-                <i class="fa-solid fa-box-open text-4xl text-slate-300 mb-3"></i>
-                <p class="text-slate-500 font-medium">ไม่พบข้อมูลอุปกรณ์วิทยุสื่อสารในระบบ</p>
+            <div id="emptySearchState" class="hidden text-center py-12 bg-slate-800 rounded-2xl border border-dashed border-slate-700">
+                <i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i>
+                <p class="text-slate-400 font-medium">ไม่พบข้อมูลอุปกรณ์วิทยุสื่อสารในระบบ</p>
             </div>
         </section>
 
         <!-- TAB 2: หน้าแจ้งส่งซ่อมวิทยุสื่อสาร -->
         <section id="secRepair" class="hidden space-y-6 max-w-3xl mx-auto">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="border-b border-slate-200 pb-4 mb-6">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center space-x-2">
-                        <i class="fa-solid fa-wrench text-amber-600"></i>
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+                <div class="border-b border-slate-700 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-wrench text-amber-500"></i>
                         <span>แบบฟอร์มแจ้งส่งซ่อมวิทยุสื่อสาร</span>
                     </h2>
-                    <p class="text-xs text-slate-500 mt-1">เลือกอุปกรณ์และระบุรายการอาการเสียเพื่อบันทึกประวัติส่งซ่อม</p>
+                    <p class="text-xs text-slate-400 mt-1">เลือกอุปกรณ์และระบุรายการอาการเสียเพื่อบันทึกประวัติส่งซ่อม</p>
                 </div>
 
                 <form id="repairForm" onsubmit="handleSaveRepairRequest(event)" class="space-y-6">
                     <!-- Radio Selection -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">เลือกอุปกรณ์วิทยุสื่อสาร <span class="text-rose-500">*</span></label>
-                        <select id="repairSelectRadio" required onchange="onRepairSelectRadioChange()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">เลือกอุปกรณ์วิทยุสื่อสาร <span class="text-rose-500">*</span></label>
+                        <select id="repairSelectRadio" required onchange="onRepairSelectRadioChange()" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                             <option value="">-- เลือกรายการวิทยุสื่อสาร --</option>
                         </select>
                     </div>
 
                     <!-- Radio Summary Card -->
-                    <div id="repairRadioSummary" class="hidden bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+                    <div id="repairRadioSummary" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-700 text-xs space-y-2">
                         <div class="flex justify-between">
-                            <span class="text-slate-500">IMEI:</span>
-                            <span id="summaryImei" class="font-medium text-slate-800"></span>
+                            <span class="text-slate-400">รุ่นวิทยุ:</span>
+                            <span id="summaryModel" class="font-medium text-white"></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">เบอร์โทรศัพท์:</span>
-                            <span id="summaryPhone" class="font-medium text-slate-800"></span>
+                            <span class="text-slate-400">IMEI:</span>
+                            <span id="summaryImei" class="font-medium text-white"></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">ประวัติซ่อมสะสม:</span>
-                            <span id="summaryRepairCount" class="font-medium text-amber-600"></span>
+                            <span class="text-slate-400">เบอร์โทรศัพท์:</span>
+                            <span id="summaryPhone" class="font-medium text-white"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">ประวัติซ่อมสะสม:</span>
+                            <span id="summaryRepairCount" class="font-medium text-amber-400"></span>
                         </div>
                     </div>
 
                     <!-- Repair Date -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่ส่งซ่อม <span class="text-rose-500">*</span></label>
-                        <input type="date" id="repairDateInput" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">วันที่ส่งซ่อม <span class="text-rose-500">*</span></label>
+                        <input type="date" id="repairDateInput" required class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                     </div>
 
                     <!-- Dynamic Symptoms Checklist / Multi-select -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <label class="block text-xs font-semibold text-slate-600">รายการอาการเสีย <span class="text-rose-500">*</span></label>
-                            <button type="button" onclick="addRepairSymptomDropdownRow()" class="text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 font-medium px-2.5 py-1 rounded-lg transition border border-amber-200 flex items-center space-x-1">
+                            <label class="block text-xs font-semibold text-slate-300">รายการอาการเสีย <span class="text-rose-500">*</span></label>
+                            <button type="button" onclick="addRepairSymptomDropdownRow()" class="text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-white font-medium px-2.5 py-1 rounded-lg transition border border-amber-500/30 flex items-center space-x-1">
                                 <i class="fa-solid fa-plus"></i>
                                 <span>เพิ่มอาการเสีย</span>
                             </button>
@@ -175,17 +181,17 @@
 
                     <!-- Additional Symptom Note -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">รายละเอียดอาการเสียเพิ่มเติม / หมายเหตุ</label>
-                        <textarea id="repairDetailInput" rows="3" placeholder="ระบุรายละเอียดอาการเสียเพิ่มเติม เช่น ปุ่มเปิดไม่ติด, สายชาร์จหลวม..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">รายละเอียดอาการเสียเพิ่มเติม / หมายเหตุ</label>
+                        <textarea id="repairDetailInput" rows="3" placeholder="ระบุรายละเอียดอาการเสียเพิ่มเติม เช่น ปุ่มเปิดไม่ติด, สายชาร์จหลวม..." class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
-                        <button type="button" onclick="switchMainTab('allRadios')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium transition flex items-center space-x-1">
+                    <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-700">
+                        <button type="button" onclick="switchMainTab('allRadios')" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-700 text-sm font-medium transition flex items-center space-x-1">
                             <i class="fa-solid fa-arrow-left"></i>
                             <span>กลับ</span>
                         </button>
-                        <button type="button" onclick="resetRepairForm()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium transition">
+                        <button type="button" onclick="resetRepairForm()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-700 text-sm font-medium transition">
                             ล้างข้อมูล
                         </button>
                         <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 text-white font-medium hover:bg-amber-700 text-sm transition shadow-sm">
@@ -199,25 +205,25 @@
         <!-- TAB 3: หน้า Admin จัดการข้อมูล -->
         <section id="secAdmin" class="hidden space-y-6">
             <!-- Login Overlay if not authenticated -->
-            <div id="adminLoginCard" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-md border border-slate-200 mt-8">
+            <div id="adminLoginCard" class="max-w-md mx-auto bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700 mt-8">
                 <div class="text-center mb-6">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <div class="w-12 h-12 bg-blue-900/60 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-blue-700">
                         <i class="fa-solid fa-lock text-xl"></i>
                     </div>
-                    <h2 class="text-xl font-bold text-slate-800">เข้าสู่ระบบผู้ดูแลระบบ</h2>
-                    <p class="text-xs text-slate-500 mt-1">กรุณากรอก Username และ Password เพื่อเข้าจัดการข้อมูล</p>
+                    <h2 class="text-xl font-bold text-white">เข้าสู่ระบบผู้ดูแลระบบ</h2>
+                    <p class="text-xs text-slate-400 mt-1">กรุณากรอก Username และ Password เพื่อเข้าจัดการข้อมูล</p>
                 </div>
 
                 <form onsubmit="handleAdminLogin(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
-                        <input type="text" id="loginUser" required placeholder="admin" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Username</label>
+                        <input type="text" id="loginUser" required placeholder="admin" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
                         <div class="relative">
-                            <input type="password" id="loginPass" required placeholder="••••••••" class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <button type="button" onclick="togglePasswordVisibility('loginPass', 'eyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+                            <input type="password" id="loginPass" required placeholder="••••••••" class="w-full pl-3.5 pr-10 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="button" onclick="togglePasswordVisibility('loginPass', 'eyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white">
                                 <i id="eyeIcon" class="fa-solid fa-eye"></i>
                             </button>
                         </div>
@@ -231,12 +237,16 @@
             <!-- Admin Content (Visible when logged in) -->
             <div id="adminContent" class="hidden space-y-6">
                 <!-- Sub-nav for Admin Sections -->
-                <div class="flex border-b border-slate-200 space-x-4">
-                    <button id="adminSubNavRadios" onclick="switchAdminSubTab('radios')" class="py-2.5 px-4 font-semibold text-sm text-blue-600 border-b-2 border-blue-600 flex items-center space-x-2">
+                <div class="flex border-b border-slate-700 space-x-4 overflow-x-auto">
+                    <button id="adminSubNavRadios" onclick="switchAdminSubTab('radios')" class="py-2.5 px-4 font-semibold text-sm text-blue-400 border-b-2 border-blue-500 flex items-center space-x-2 whitespace-nowrap">
                         <i class="fa-solid fa-walkie-talkie"></i>
                         <span>จัดการอุปกรณ์วิทยุ</span>
                     </button>
-                    <button id="adminSubNavSymptoms" onclick="switchAdminSubTab('symptoms')" class="py-2.5 px-4 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent flex items-center space-x-2">
+                    <button id="adminSubNavModels" onclick="switchAdminSubTab('models')" class="py-2.5 px-4 font-semibold text-sm text-slate-400 hover:text-white border-b-2 border-transparent flex items-center space-x-2 whitespace-nowrap">
+                        <i class="fa-solid fa-tags"></i>
+                        <span>จัดการรุ่นวิทยุ Master</span>
+                    </button>
+                    <button id="adminSubNavSymptoms" onclick="switchAdminSubTab('symptoms')" class="py-2.5 px-4 font-semibold text-sm text-slate-400 hover:text-white border-b-2 border-transparent flex items-center space-x-2 whitespace-nowrap">
                         <i class="fa-solid fa-list-check"></i>
                         <span>จัดการรายการอาการเสีย Master</span>
                     </button>
@@ -244,10 +254,10 @@
 
                 <!-- SUB-TAB 1: Radios Management -->
                 <div id="adminSubTabRadios" class="space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-800">จัดการข้อมูลอุปกรณ์ (Admin Panel)</h2>
-                            <p class="text-xs text-slate-500 mt-0.5">เพิ่ม, แก้ไข หรือลบข้อมูลทะเบียนวิทยุสื่อสารในระบบ</p>
+                            <h2 class="text-xl font-bold text-white">จัดการข้อมูลอุปกรณ์ (Admin Panel)</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">เพิ่ม, แก้ไข หรือลบข้อมูลทะเบียนวิทยุสื่อสารในระบบ</p>
                         </div>
                         <button onclick="openRadioModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center space-x-2">
                             <i class="fa-solid fa-plus"></i>
@@ -256,18 +266,18 @@
                     </div>
 
                     <!-- Admin Table -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
-                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                        <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/60">
+                            <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">
                                 <i class="fa-solid fa-table me-1"></i> รายชื่ออุปกรณ์วิทยุทั้งหมด
                             </span>
-                            <input type="text" id="adminTableSearch" oninput="renderAdminTable()" placeholder="กรองข้อมูลในตาราง..." class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs w-48 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" id="adminTableSearch" oninput="renderAdminTable()" placeholder="กรองข้อมูลในตาราง..." class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white w-48 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm">
-                                <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200">
+                                <thead class="bg-slate-900 text-slate-400 text-xs uppercase font-semibold border-b border-slate-700">
                                     <tr>
-                                        <th class="py-3 px-4">ชื่อวิทยุ / IMEI</th>
+                                        <th class="py-3 px-4">ชื่อวิทยุ / รุ่น / IMEI</th>
                                         <th class="py-3 px-4">วันที่สั่งซื้อ</th>
                                         <th class="py-3 px-4">เบอร์โทร & วันที่เปลี่ยนซิม</th>
                                         <th class="py-3 px-4">จำนวนครั้งส่งซ่อม</th>
@@ -275,7 +285,7 @@
                                         <th class="py-3 px-4 text-center">จัดการ</th>
                                     </tr>
                                 </thead>
-                                <tbody id="adminTableBody" class="divide-y divide-slate-100">
+                                <tbody id="adminTableBody" class="divide-y divide-slate-700/50">
                                     <!-- Dynamic rows -->
                                 </tbody>
                             </table>
@@ -283,25 +293,57 @@
                     </div>
                 </div>
 
-                <!-- SUB-TAB 2: Symptoms Management -->
-                <div id="adminSubTabSymptoms" class="hidden space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                <!-- SUB-TAB 2: Models Management -->
+                <div id="adminSubTabModels" class="hidden space-y-6">
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 space-y-6">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-800">จัดการ Master อาการเสีย</h2>
-                            <p class="text-xs text-slate-500 mt-1">กำหนดรายการตัวเลือกอาการเสียเพื่อให้เลือกดรอปดาวน์ในหน้าแจ้งส่งซ่อม</p>
+                            <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-tags text-blue-400"></i>
+                                <span>จัดการ Master รุ่นวิทยุสื่อสาร</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">กำหนดรายการรุ่นวิทยุสำหรับเลือกในดรอปดาวน์หน้าเพิ่ม/แก้ไขข้อมูล</p>
+                        </div>
+
+                        <!-- Add New Model Input -->
+                        <form onsubmit="handleAddMasterModel(event)" class="flex gap-2 max-w-lg">
+                            <input type="text" id="newModelInput" required placeholder="เพิ่มรุ่นวิทยุ เช่น 'Hytera PD365'" class="flex-1 px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>เพิ่มรุ่นวิทยุ</span>
+                            </button>
+                        </form>
+
+                        <!-- Models List -->
+                        <div class="border border-slate-700 rounded-xl overflow-hidden bg-slate-900/40">
+                            <ul id="masterModelsList" class="divide-y divide-slate-800 text-sm">
+                                <!-- Rendered dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 3: Symptoms Management -->
+                <div id="adminSubTabSymptoms" class="hidden space-y-6">
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 space-y-6">
+                        <div>
+                            <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-list-check text-blue-400"></i>
+                                <span>จัดการ Master อาการเสีย</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">กำหนดรายการตัวเลือกอาการเสียเพื่อให้เลือกดรอปดาวน์ในหน้าแจ้งส่งซ่อม</p>
                         </div>
 
                         <!-- Add New Symptom Input -->
                         <form onsubmit="handleAddMasterSymptom(event)" class="flex gap-2 max-w-lg">
-                            <input type="text" id="newSymptomInput" required placeholder="เพิ่มรายการอาการเสีย เช่น 'ลำโพงไม่มีเสียง'" class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
-                                <i class="fa-solid fa-plus me-1"></i> เพิ่มรายการ
+                            <input type="text" id="newSymptomInput" required placeholder="เพิ่มรายการอาการเสีย เช่น 'ลำโพงไม่มีเสียง'" class="flex-1 px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-plus me-1"></i> <span>เพิ่มรายการ</span>
                             </button>
                         </form>
 
                         <!-- Symptoms List -->
-                        <div class="border border-slate-200 rounded-xl overflow-hidden">
-                            <ul id="masterSymptomsList" class="divide-y divide-slate-100 text-sm">
+                        <div class="border border-slate-700 rounded-xl overflow-hidden bg-slate-900/40">
+                            <ul id="masterSymptomsList" class="divide-y divide-slate-800 text-sm">
                                 <!-- Rendered dynamically -->
                             </ul>
                         </div>
@@ -313,24 +355,24 @@
     </main>
 
     <!-- MODAL 1: Detail Modal -->
-    <div id="detailModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200">
-            <div class="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
-                <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
-                    <i class="fa-solid fa-circle-info text-blue-600"></i>
+    <div id="detailModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-700">
+            <div class="p-6 border-b border-slate-700 flex items-center justify-between sticky top-0 bg-slate-900 z-10">
+                <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-info text-blue-400"></i>
                     <span id="detailTitle">รายละเอียดวิทยุสื่อสาร</span>
                 </h3>
-                <button onclick="closeModal('detailModal')" class="text-slate-400 hover:text-slate-600 p-1">
+                <button onclick="closeModal('detailModal')" class="text-slate-400 hover:text-white p-1">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
             
-            <div class="p-6 space-y-4 text-sm" id="detailModalBody">
+            <div class="p-6 space-y-4 text-sm bg-slate-800" id="detailModalBody">
                 <!-- Content injected dynamically -->
             </div>
 
-            <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
-                <button onclick="closeModal('detailModal')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium text-xs transition">
+            <div class="p-4 bg-slate-900 border-t border-slate-700 text-right">
+                <button onclick="closeModal('detailModal')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium text-xs transition">
                     ปิดหน้าต่าง
                 </button>
             </div>
@@ -338,52 +380,60 @@
     </div>
 
     <!-- MODAL 2: Admin Create/Edit Radio Modal -->
-    <div id="radioFormModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
-            <div class="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
-                <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
-                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+    <div id="radioFormModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700">
+            <div class="p-6 border-b border-slate-700 flex items-center justify-between sticky top-0 bg-slate-900 z-10">
+                <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-pen-to-square text-blue-400"></i>
                     <span id="radioModalTitle">เพิ่มข้อมูลวิทยุสื่อสารใหม่</span>
                 </h3>
-                <button onclick="closeModal('radioFormModal')" class="text-slate-400 hover:text-slate-600 p-1">
+                <button onclick="closeModal('radioFormModal')" class="text-slate-400 hover:text-white p-1">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
 
-            <form id="radioForm" onsubmit="handleSaveRadio(event)" class="p-6 space-y-4">
+            <form id="radioForm" onsubmit="handleSaveRadio(event)" class="p-6 space-y-4 bg-slate-800">
                 <input type="hidden" id="editRadioId">
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อวิทยุ (RADIO NAME) <span class="text-rose-500">*</span></label>
-                        <input type="text" id="formRadioName" required placeholder="เช่น Radio-HQ-01" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">ชื่อวิทยุ (RADIO NAME) <span class="text-rose-500">*</span></label>
+                        <input type="text" id="formRadioName" required placeholder="เช่น Radio-HQ-01" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">IMEI / SERIAL NUMBER <span class="text-rose-500">*</span></label>
-                        <input type="text" id="formImei" required placeholder="เช่น 864291048291029" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">รุ่นวิทยุ (MODEL)</label>
+                        <select id="formModel" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- เลือกรุ่นวิทยุ --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">IMEI / SERIAL NUMBER <span class="text-rose-500">*</span></label>
+                        <input type="text" id="formImei" required placeholder="เช่น 864291048291029" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">เบอร์โทรศัพท์ (PHONE NUMBER)</label>
+                        <input type="text" id="formPhone" placeholder="เช่น 081-234-5678" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">วันเดือนปีที่สั่ง (ORDER DATE)</label>
-                        <input type="date" id="formOrderDate" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">วันเดือนปีที่สั่ง (ORDER DATE)</label>
+                        <input type="date" id="formOrderDate" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">เบอร์โทรศัพท์ (PHONE NUMBER)</label>
-                        <input type="text" id="formPhone" placeholder="เช่น 081-234-5678" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">วันที่เปลี่ยนซิมล่าสุด (SIM CHANGE DATE)</label>
+                        <input type="date" id="formSimDate" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่เปลี่ยนซิมล่าสุด (SIM CHANGE DATE)</label>
-                    <input type="date" id="formSimDate" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <!-- Dynamic Repair History Section in Admin Form -->
-                <div class="border border-amber-200 bg-amber-50/50 p-4 rounded-xl space-y-3">
+                <div class="border border-amber-500/30 bg-amber-950/20 p-4 rounded-xl space-y-3">
                     <div class="flex items-center justify-between">
-                        <label class="block text-xs font-bold text-amber-800">
+                        <label class="block text-xs font-bold text-amber-300">
                             <i class="fa-solid fa-wrench me-1"></i> ประวัติการส่งซ่อม + อาการเสีย
                         </label>
                         <button type="button" onclick="addAdminRepairRow()" class="text-xs bg-amber-600 text-white font-medium px-2.5 py-1 rounded-lg hover:bg-amber-700 transition">
@@ -397,12 +447,12 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">หมายเหตุ (REMARKS)</label>
-                    <textarea id="formRemarks" rows="2" placeholder="ข้อมูลเพิ่มเติม เช่น ผู้ใช้งานปัจจุบัน, แผนก, หรือสถานที่ใช้งาน..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">หมายเหตุ (REMARKS)</label>
+                    <textarea id="formRemarks" rows="2" placeholder="ข้อมูลเพิ่มเติม เช่น ผู้ใช้งานปัจจุบัน, แผนก, หรือสถานที่ใช้งาน..." class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                 </div>
 
-                <div class="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('radioFormModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 text-xs font-medium hover:bg-slate-50 transition">
+                <div class="flex items-center justify-end space-x-2 pt-4 border-t border-slate-700">
+                    <button type="button" onclick="closeModal('radioFormModal')" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 text-xs font-medium hover:bg-slate-700 transition">
                         ยกเลิก
                     </button>
                     <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 transition">
@@ -421,20 +471,20 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCLRsapZFp8HTamGap1U7ATyKj68O1--jI",
             authDomain: "walkie-talkie-d97ae.firebaseapp.com",
-            databaseURL: "https://walkie-talkie-d97ae-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "walkie-talkie-d97ae",
             storageBucket: "walkie-talkie-d97ae.firebasestorage.app",
             messagingSenderId: "122431150048",
             appId: "1:122431150048:web:58ea05911269094d45fd85"
         };
 
-        // Initialize Firebase Realtime Database
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const db = firebase.firestore();
 
         // State variables
         let radioList = [];
         let masterSymptoms = ['เครื่องเปิดไม่ติด', 'ลำโพงไม่มีเสียง', 'ไมโครโฟนไม่ดัง', 'แบตเตอรี่เสื่อม', 'หน้าจอแตก', 'แท่นชาร์จเสีย'];
+        let masterModels = ['Hytera PD365', 'Icom IC-F3003', 'Motorola XiR P6600i', 'Baofeng UV-5R', 'Spender TC-245H'];
         let isAdminLoggedIn = false;
 
         // Initialize App
@@ -448,41 +498,49 @@
         });
 
         // ==========================================
-        // 2. FIREBASE DATA SYNC FUNCTIONS (Realtime DB)
+        // 2. FIREBASE DATA SYNC FUNCTIONS
         // ==========================================
         async function loadFromFirebase() {
             try {
-                // Fetch Radios from Realtime Database 'radios'
-                const radiosSnapshot = await db.ref('radios').once('value');
+                // Fetch Radios from Firestore collection 'radios'
+                const radiosSnapshot = await db.collection('radios').get();
                 radioList = [];
-                if (radiosSnapshot.exists()) {
-                    radiosSnapshot.forEach(childSnapshot => {
-                        radioList.push(childSnapshot.val());
-                    });
-                }
+                radiosSnapshot.forEach(doc => {
+                    radioList.push(doc.data());
+                });
 
-                // Fetch Master Symptoms from Realtime Database 'settings/master'
-                const settingsSnap = await db.ref('settings/master').once('value');
-                if (settingsSnap.exists() && settingsSnap.val().symptoms) {
-                    masterSymptoms = settingsSnap.val().symptoms;
+                // Fetch Master Data from Firestore document 'settings/master'
+                const settingsDoc = await db.collection('settings').doc('master').get();
+                if (settingsDoc.exists) {
+                    const data = settingsDoc.data();
+                    if (data.symptoms) masterSymptoms = data.symptoms;
+                    if (data.models) masterModels = data.models;
                 } else {
-                    await db.ref('settings/master').set({ symptoms: masterSymptoms });
+                    await db.collection('settings').doc('master').set({ 
+                        symptoms: masterSymptoms, 
+                        models: masterModels 
+                    });
                 }
 
                 renderAllRadios();
                 populateRadioDropdowns();
+                populateModelDropdown();
                 renderMasterSymptoms();
+                renderMasterModels();
             } catch (error) {
                 console.error("Error loading data from Firebase: ", error);
                 alert("ไม่สามารถเชื่อมต่อฐานข้อมูล Firebase ได้ กรุณาตรวจสอบการตั้งค่า Config");
             }
         }
 
-        async function saveSymptomsToFirebase() {
+        async function saveMasterDataToFirebase() {
             try {
-                await db.ref('settings/master').set({ symptoms: masterSymptoms });
+                await db.collection('settings').doc('master').set({ 
+                    symptoms: masterSymptoms, 
+                    models: masterModels 
+                });
             } catch (error) {
-                console.error("Error saving symptoms: ", error);
+                console.error("Error saving master settings: ", error);
             }
         }
 
@@ -518,16 +576,24 @@
 
         function switchAdminSubTab(subTabKey) {
             const isRadios = subTabKey === 'radios';
+            const isModels = subTabKey === 'models';
+            const isSymptoms = subTabKey === 'symptoms';
+
             document.getElementById('adminSubTabRadios').classList.toggle('hidden', !isRadios);
-            document.getElementById('adminSubTabSymptoms').classList.toggle('hidden', isRadios);
+            document.getElementById('adminSubTabModels').classList.toggle('hidden', !isModels);
+            document.getElementById('adminSubTabSymptoms').classList.toggle('hidden', !isSymptoms);
 
             document.getElementById('adminSubNavRadios').className = isRadios 
-                ? 'py-2.5 px-4 font-semibold text-sm text-blue-600 border-b-2 border-blue-600 flex items-center space-x-2'
-                : 'py-2.5 px-4 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent flex items-center space-x-2';
+                ? 'py-2.5 px-4 font-semibold text-sm text-blue-400 border-b-2 border-blue-500 flex items-center space-x-2 whitespace-nowrap'
+                : 'py-2.5 px-4 font-semibold text-sm text-slate-400 hover:text-white border-b-2 border-transparent flex items-center space-x-2 whitespace-nowrap';
             
-            document.getElementById('adminSubNavSymptoms').className = !isRadios 
-                ? 'py-2.5 px-4 font-semibold text-sm text-blue-600 border-b-2 border-blue-600 flex items-center space-x-2'
-                : 'py-2.5 px-4 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent flex items-center space-x-2';
+            document.getElementById('adminSubNavModels').className = isModels 
+                ? 'py-2.5 px-4 font-semibold text-sm text-blue-400 border-b-2 border-blue-500 flex items-center space-x-2 whitespace-nowrap'
+                : 'py-2.5 px-4 font-semibold text-sm text-slate-400 hover:text-white border-b-2 border-transparent flex items-center space-x-2 whitespace-nowrap';
+
+            document.getElementById('adminSubNavSymptoms').className = isSymptoms 
+                ? 'py-2.5 px-4 font-semibold text-sm text-blue-400 border-b-2 border-blue-500 flex items-center space-x-2 whitespace-nowrap'
+                : 'py-2.5 px-4 font-semibold text-sm text-slate-400 hover:text-white border-b-2 border-transparent flex items-center space-x-2 whitespace-nowrap';
         }
 
         // Admin Auth
@@ -576,11 +642,19 @@
 
             let optionsHtml = '<option value="">-- เลือกชื่อวิทยุสื่อสาร --</option>';
             radioList.forEach(item => {
-                optionsHtml += `<option value="${item.id}">${item.name} (${item.imei})</option>`;
+                const modelStr = item.model ? ` [${item.model}]` : '';
+                optionsHtml += `<option value="${item.id}">${item.name}${modelStr} (${item.imei})</option>`;
             });
 
             if (selectDropdown) selectDropdown.innerHTML = '<option value="">-- หรือเลือกชื่อวิทยุเพื่อดูข้อมูล --</option>' + optionsHtml.replace('<option value="">-- เลือกชื่อวิทยุสื่อสาร --</option>', '');
             if (repairSelect) repairSelect.innerHTML = optionsHtml;
+        }
+
+        function populateModelDropdown() {
+            const select = document.getElementById('formModel');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- เลือกรุ่นวิทยุ --</option>' + 
+                masterModels.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
         }
 
         // Render Cards (Main View)
@@ -601,47 +675,48 @@
             grid.innerHTML = itemsToRender.map(item => {
                 const repairCount = item.repairs ? item.repairs.length : 0;
                 return `
-                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between">
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-5 shadow-lg hover:shadow-xl transition space-y-4 flex flex-col justify-between">
                         <div>
                             <div class="flex items-start justify-between">
                                 <div>
-                                    <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                                    <h3 class="font-bold text-white text-base flex items-center space-x-2">
                                         <span>${escapeHtml(item.name)}</span>
                                     </h3>
-                                    <p class="text-xs text-slate-400 font-mono mt-0.5">IMEI: ${escapeHtml(item.imei)}</p>
+                                    ${item.model ? `<span class="inline-block bg-blue-900/60 text-blue-300 border border-blue-700/50 text-[11px] px-2 py-0.5 rounded-md font-medium mt-1">${escapeHtml(item.model)}</span>` : ''}
+                                    <p class="text-xs text-slate-400 font-mono mt-1">IMEI: ${escapeHtml(item.imei)}</p>
                                 </div>
-                                <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-1 rounded-full flex items-center space-x-1">
-                                    <i class="fa-solid fa-wrench text-amber-600 text-xs"></i>
+                                <span class="bg-amber-950/60 text-amber-300 border border-amber-700/50 text-xs font-medium px-2.5 py-1 rounded-full flex items-center space-x-1">
+                                    <i class="fa-solid fa-wrench text-amber-400 text-xs"></i>
                                     <span>ซ่อม ${repairCount} ครั้ง</span>
                                 </span>
                             </div>
 
-                            <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                            <div class="mt-4 pt-3 border-t border-slate-700/60 grid grid-cols-2 gap-2 text-xs">
                                 <div>
                                     <span class="text-slate-400 block">เบอร์โทรศัพท์:</span>
-                                    <span class="font-medium text-slate-700">${item.phone ? escapeHtml(item.phone) : '-'}</span>
+                                    <span class="font-medium text-slate-200">${item.phone ? escapeHtml(item.phone) : '-'}</span>
                                 </div>
                                 <div>
                                     <span class="text-slate-400 block">เปลี่ยนซิมล่าสุด:</span>
-                                    <span class="font-medium text-slate-700">${item.simDate ? formatDate(item.simDate) : '-'}</span>
+                                    <span class="font-medium text-slate-200">${item.simDate ? formatDate(item.simDate) : '-'}</span>
                                 </div>
                                 <div>
                                     <span class="text-slate-400 block">วันที่สั่งซื้อ:</span>
-                                    <span class="font-medium text-slate-700">${item.orderDate ? formatDate(item.orderDate) : '-'}</span>
+                                    <span class="font-medium text-slate-200">${item.orderDate ? formatDate(item.orderDate) : '-'}</span>
                                 </div>
                                 <div>
                                     <span class="text-slate-400 block">หมายเหตุ:</span>
-                                    <span class="font-medium text-slate-700 truncate block" title="${escapeHtml(item.remarks || '')}">${item.remarks ? escapeHtml(item.remarks) : '-'}</span>
+                                    <span class="font-medium text-slate-200 truncate block" title="${escapeHtml(item.remarks || '')}">${item.remarks ? escapeHtml(item.remarks) : '-'}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                            <button onclick="openDetailModal('${item.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium py-2 rounded-xl transition flex items-center justify-center space-x-1">
+                        <div class="pt-3 border-t border-slate-700/60 flex items-center justify-between gap-2">
+                            <button onclick="openDetailModal('${item.id}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-xl transition flex items-center justify-center space-x-1">
                                 <i class="fa-solid fa-eye"></i>
                                 <span>ดูข้อมูลทั้งหมด</span>
                             </button>
-                            <button onclick="quickOpenRepair('${item.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-medium py-2 px-3 rounded-xl transition flex items-center space-x-1">
+                            <button onclick="quickOpenRepair('${item.id}')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-medium py-2 px-3 rounded-xl transition flex items-center space-x-1">
                                 <i class="fa-solid fa-wrench"></i>
                                 <span>แจ้งซ่อม</span>
                             </button>
@@ -656,6 +731,7 @@
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const filtered = radioList.filter(item => 
                 item.name.toLowerCase().includes(query) ||
+                (item.model && item.model.toLowerCase().includes(query)) ||
                 item.imei.toLowerCase().includes(query) ||
                 (item.phone && item.phone.toLowerCase().includes(query))
             );
@@ -681,29 +757,30 @@
             let repairLogsHtml = repairs.length === 0 
                 ? '<p class="text-xs text-slate-400 italic">ไม่มีประวัติการส่งซ่อม</p>'
                 : repairs.map((rep, idx) => `
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
-                        <div class="flex items-center justify-between font-semibold text-xs text-amber-800">
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-1">
+                        <div class="flex items-center justify-between font-semibold text-xs text-amber-300">
                             <span>ครั้งที่ ${idx + 1}: วันที่ ${formatDate(rep.date)}</span>
                         </div>
-                        <p class="text-xs text-slate-600">${escapeHtml(rep.symptoms || rep.symptom || '-')}</p>
+                        <p class="text-xs text-slate-300">${escapeHtml(rep.symptoms || rep.symptom || '-')}</p>
                     </div>
                 `).join('');
 
             document.getElementById('detailModalBody').innerHTML = `
-                <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-2">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-2">
                     <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div><span class="text-slate-400">ชื่อวิทยุ:</span> <p class="font-semibold text-slate-800">${escapeHtml(item.name)}</p></div>
-                        <div><span class="text-slate-400">IMEI:</span> <p class="font-semibold text-slate-800 font-mono">${escapeHtml(item.imei)}</p></div>
-                        <div><span class="text-slate-400">วันเดือนปีที่สั่ง:</span> <p class="font-medium text-slate-700">${item.orderDate ? formatDate(item.orderDate) : '-'}</p></div>
-                        <div><span class="text-slate-400">เบอร์โทรศัพท์:</span> <p class="font-medium text-slate-700">${item.phone ? escapeHtml(item.phone) : '-'}</p></div>
-                        <div class="col-span-2"><span class="text-slate-400">วันที่เปลี่ยนซิมล่าสุด:</span> <p class="font-medium text-slate-700">${item.simDate ? formatDate(item.simDate) : '-'}</p></div>
-                        <div class="col-span-2"><span class="text-slate-400">หมายเหตุ:</span> <p class="font-medium text-slate-700">${item.remarks ? escapeHtml(item.remarks) : '-'}</p></div>
+                        <div><span class="text-slate-400">ชื่อวิทยุ:</span> <p class="font-semibold text-white">${escapeHtml(item.name)}</p></div>
+                        <div><span class="text-slate-400">รุ่นวิทยุ:</span> <p class="font-semibold text-blue-300">${item.model ? escapeHtml(item.model) : '-'}</p></div>
+                        <div class="col-span-2"><span class="text-slate-400">IMEI:</span> <p class="font-semibold text-white font-mono">${escapeHtml(item.imei)}</p></div>
+                        <div><span class="text-slate-400">วันเดือนปีที่สั่ง:</span> <p class="font-medium text-slate-200">${item.orderDate ? formatDate(item.orderDate) : '-'}</p></div>
+                        <div><span class="text-slate-400">เบอร์โทรศัพท์:</span> <p class="font-medium text-slate-200">${item.phone ? escapeHtml(item.phone) : '-'}</p></div>
+                        <div class="col-span-2"><span class="text-slate-400">วันที่เปลี่ยนซิมล่าสุด:</span> <p class="font-medium text-slate-200">${item.simDate ? formatDate(item.simDate) : '-'}</p></div>
+                        <div class="col-span-2"><span class="text-slate-400">หมายเหตุ:</span> <p class="font-medium text-slate-200">${item.remarks ? escapeHtml(item.remarks) : '-'}</p></div>
                     </div>
                 </div>
 
                 <div class="space-y-2">
-                    <h4 class="font-bold text-xs text-slate-700 flex items-center space-x-1">
-                        <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
+                    <h4 class="font-bold text-xs text-slate-200 flex items-center space-x-1">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
                         <span>ประวัติการส่งซ่อม (${repairs.length} ครั้ง)</span>
                     </h4>
                     <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -736,6 +813,7 @@
                 return;
             }
 
+            document.getElementById('summaryModel').innerText = item.model || '-';
             document.getElementById('summaryImei').innerText = item.imei;
             document.getElementById('summaryPhone').innerText = item.phone || '-';
             document.getElementById('summaryRepairCount').innerText = `${(item.repairs || []).length} ครั้ง`;
@@ -758,11 +836,11 @@
             row.id = rowId;
             row.className = 'flex items-center space-x-2';
             row.innerHTML = `
-                <select class="repair-symptom-select flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <select class="repair-symptom-select flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                     <option value="">-- เลือกอาการเสีย --</option>
                     ${symptomOptions}
                 </select>
-                <button type="button" onclick="removeSymptomRow('${rowId}')" class="text-rose-500 hover:text-rose-700 p-2 text-xs">
+                <button type="button" onclick="removeSymptomRow('${rowId}')" class="text-rose-400 hover:text-rose-300 p-2 text-xs">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             `;
@@ -819,8 +897,8 @@
                 });
 
                 try {
-                    // Save updated radio data to Realtime DB
-                    await db.ref('radios/' + radio.id).set(radio);
+                    // Save updated radio data to Firestore
+                    await db.collection('radios').doc(radio.id).set(radio);
                     alert('บันทึกแจ้งส่งซ่อมเรียบร้อยแล้ว!');
                     resetRepairForm();
                     switchMainTab('allRadios');
@@ -838,6 +916,7 @@
 
             const filtered = radioList.filter(item => 
                 item.name.toLowerCase().includes(searchVal) ||
+                (item.model && item.model.toLowerCase().includes(searchVal)) ||
                 item.imei.toLowerCase().includes(searchVal) ||
                 (item.phone && item.phone.toLowerCase().includes(searchVal))
             );
@@ -848,28 +927,29 @@
             }
 
             tbody.innerHTML = filtered.map(item => `
-                <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="openDetailModal('${item.id}')">
+                <tr class="hover:bg-slate-700/40 transition cursor-pointer" onclick="openDetailModal('${item.id}')">
                     <td class="py-3 px-4">
-                        <div class="font-bold text-slate-800">${escapeHtml(item.name)}</div>
-                        <div class="text-xs text-slate-400 font-mono">IMEI: ${escapeHtml(item.imei)}</div>
+                        <div class="font-bold text-white">${escapeHtml(item.name)}</div>
+                        ${item.model ? `<span class="inline-block bg-blue-900/60 text-blue-300 border border-blue-700/50 text-[10px] px-2 py-0.5 rounded font-medium mt-0.5">${escapeHtml(item.model)}</span>` : ''}
+                        <div class="text-xs text-slate-400 font-mono mt-0.5">IMEI: ${escapeHtml(item.imei)}</div>
                     </td>
-                    <td class="py-3 px-4 text-xs text-slate-600">${item.orderDate ? formatDate(item.orderDate) : '-'}</td>
+                    <td class="py-3 px-4 text-xs text-slate-300">${item.orderDate ? formatDate(item.orderDate) : '-'}</td>
                     <td class="py-3 px-4 text-xs">
-                        <div class="text-slate-700">${item.phone ? escapeHtml(item.phone) : '-'}</div>
+                        <div class="text-slate-200">${item.phone ? escapeHtml(item.phone) : '-'}</div>
                         <div class="text-slate-400">เปลี่ยนซิม: ${item.simDate ? formatDate(item.simDate) : '-'}</div>
                     </td>
                     <td class="py-3 px-4">
-                        <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium">
+                        <span class="bg-amber-950/60 text-amber-300 border border-amber-700/50 text-xs px-2.5 py-0.5 rounded-full font-medium">
                             ส่งซ่อม ${(item.repairs || []).length} ครั้ง
                         </span>
                     </td>
-                    <td class="py-3 px-4 text-xs text-slate-500 max-w-xs truncate">${item.remarks ? escapeHtml(item.remarks) : '-'}</td>
+                    <td class="py-3 px-4 text-xs text-slate-300 max-w-xs truncate">${item.remarks ? escapeHtml(item.remarks) : '-'}</td>
                     <td class="py-3 px-4 text-center" onclick="event.stopPropagation()">
                         <div class="flex items-center justify-center space-x-2">
-                            <button onclick="openRadioModal('${item.id}')" class="text-blue-600 hover:text-blue-800 p-1">
+                            <button onclick="openRadioModal('${item.id}')" class="text-blue-400 hover:text-blue-300 p-1">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button onclick="deleteRadio('${item.id}')" class="text-rose-500 hover:text-rose-700 p-1">
+                            <button onclick="deleteRadio('${item.id}')" class="text-rose-400 hover:text-rose-300 p-1">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -881,6 +961,7 @@
         function openRadioModal(id = null) {
             document.getElementById('radioForm').reset();
             document.getElementById('adminRepairEntriesContainer').innerHTML = '';
+            populateModelDropdown();
 
             if (id) {
                 const item = radioList.find(r => r.id === id);
@@ -888,6 +969,7 @@
                     document.getElementById('radioModalTitle').innerText = 'แก้ไขข้อมูลวิทยุสื่อสาร';
                     document.getElementById('editRadioId').value = item.id;
                     document.getElementById('formRadioName').value = item.name;
+                    document.getElementById('formModel').value = item.model || '';
                     document.getElementById('formImei').value = item.imei;
                     document.getElementById('formOrderDate').value = item.orderDate || '';
                     document.getElementById('formPhone').value = item.phone || '';
@@ -914,17 +996,17 @@
 
             const row = document.createElement('div');
             row.id = rowId;
-            row.className = 'bg-white p-3 rounded-xl border border-amber-200 space-y-2';
+            row.className = 'bg-slate-900 p-3 rounded-xl border border-amber-500/30 space-y-2';
             row.innerHTML = `
-                <div class="flex items-center justify-between text-xs font-semibold text-amber-800">
+                <div class="flex items-center justify-between text-xs font-semibold text-amber-300">
                     <span>ครั้งที่ ${rowIdx}:</span>
-                    <button type="button" onclick="removeAdminRepairRow('${rowId}')" class="text-rose-500 hover:text-rose-700">
+                    <button type="button" onclick="removeAdminRepairRow('${rowId}')" class="text-rose-400 hover:text-rose-300">
                         <i class="fa-solid fa-trash-can me-1"></i> ลบรายการนี้
                     </button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <input type="date" value="${dateVal}" class="admin-repair-date px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-500">
-                    <input type="text" value="${escapeHtml(symptomVal)}" placeholder="ระบุอาการเสีย / รายละเอียดการส่งซ่อม..." class="admin-repair-symptom sm:col-span-2 px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-500">
+                    <input type="date" value="${dateVal}" class="admin-repair-date px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500">
+                    <input type="text" value="${escapeHtml(symptomVal)}" placeholder="ระบุอาการเสีย / รายละเอียดการส่งซ่อม..." class="admin-repair-symptom sm:col-span-2 px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500">
                 </div>
             `;
             container.appendChild(row);
@@ -939,6 +1021,7 @@
             e.preventDefault();
             const id = document.getElementById('editRadioId').value;
             const name = document.getElementById('formRadioName').value.trim();
+            const model = document.getElementById('formModel').value.trim();
             const imei = document.getElementById('formImei').value.trim();
             const orderDate = document.getElementById('formOrderDate').value;
             const phone = document.getElementById('formPhone').value.trim();
@@ -961,7 +1044,7 @@
 
             if (targetId) {
                 // Edit existing
-                radioObj = { id: targetId, name, imei, orderDate, phone, simDate, remarks, repairs };
+                radioObj = { id: targetId, name, model, imei, orderDate, phone, simDate, remarks, repairs };
                 const idx = radioList.findIndex(r => r.id === targetId);
                 if (idx !== -1) {
                     radioList[idx] = radioObj;
@@ -969,13 +1052,13 @@
             } else {
                 // Create new
                 targetId = 'radio_' + Date.now();
-                radioObj = { id: targetId, name, imei, orderDate, phone, simDate, remarks, repairs };
+                radioObj = { id: targetId, name, model, imei, orderDate, phone, simDate, remarks, repairs };
                 radioList.unshift(radioObj);
             }
 
             try {
-                // Save to Realtime DB
-                await db.ref('radios/' + targetId).set(radioObj);
+                // Save to Firestore
+                await db.collection('radios').doc(targetId).set(radioObj);
                 closeModal('radioFormModal');
                 renderAdminTable();
                 renderAllRadios();
@@ -990,7 +1073,7 @@
         async function deleteRadio(id) {
             if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลวิทยุสื่อสารเครื่องนี้?')) {
                 try {
-                    await db.ref('radios/' + id).remove();
+                    await db.collection('radios').doc(id).delete();
                     radioList = radioList.filter(r => r.id !== id);
                     renderAdminTable();
                     renderAllRadios();
@@ -999,6 +1082,48 @@
                     console.error("Error deleting radio: ", error);
                     alert("เกิดข้อผิดพลาดในการลบข้อมูล");
                 }
+            }
+        }
+
+        // Master Models Management
+        function renderMasterModels() {
+            const list = document.getElementById('masterModelsList');
+            if (!list) return;
+
+            if (masterModels.length === 0) {
+                list.innerHTML = `<li class="p-4 text-center text-slate-400 text-xs">ไม่มีรายการรุ่นวิทยุ Master</li>`;
+                return;
+            }
+
+            list.innerHTML = masterModels.map((m, idx) => `
+                <li class="p-3 flex items-center justify-between hover:bg-slate-800/60 transition">
+                    <span class="text-slate-200 font-medium">${escapeHtml(m)}</span>
+                    <button onclick="deleteMasterModel(${idx})" class="text-rose-400 hover:text-rose-300 text-xs px-2 py-1 flex items-center space-x-1">
+                        <i class="fa-solid fa-trash-can"></i> <span>ลบ</span>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        async function handleAddMasterModel(e) {
+            e.preventDefault();
+            const input = document.getElementById('newModelInput');
+            const val = input.value.trim();
+            if (val && !masterModels.includes(val)) {
+                masterModels.push(val);
+                await saveMasterDataToFirebase();
+                renderMasterModels();
+                populateModelDropdown();
+                input.value = '';
+            }
+        }
+
+        async function deleteMasterModel(idx) {
+            if (confirm('ต้องการลบรุ่นวิทยุนี้จากรายการ Master หรือไม่?')) {
+                masterModels.splice(idx, 1);
+                await saveMasterDataToFirebase();
+                renderMasterModels();
+                populateModelDropdown();
             }
         }
 
@@ -1013,10 +1138,10 @@
             }
 
             list.innerHTML = masterSymptoms.map((sym, idx) => `
-                <li class="p-3 flex items-center justify-between hover:bg-slate-50 transition">
-                    <span class="text-slate-700 font-medium">${escapeHtml(sym)}</span>
-                    <button onclick="deleteMasterSymptom(${idx})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1">
-                        <i class="fa-solid fa-trash-can"></i> ลบ
+                <li class="p-3 flex items-center justify-between hover:bg-slate-800/60 transition">
+                    <span class="text-slate-200 font-medium">${escapeHtml(sym)}</span>
+                    <button onclick="deleteMasterSymptom(${idx})" class="text-rose-400 hover:text-rose-300 text-xs px-2 py-1 flex items-center space-x-1">
+                        <i class="fa-solid fa-trash-can"></i> <span>ลบ</span>
                     </button>
                 </li>
             `).join('');
@@ -1028,7 +1153,7 @@
             const val = input.value.trim();
             if (val && !masterSymptoms.includes(val)) {
                 masterSymptoms.push(val);
-                await saveSymptomsToFirebase();
+                await saveMasterDataToFirebase();
                 renderMasterSymptoms();
                 input.value = '';
             }
@@ -1037,7 +1162,7 @@
         async function deleteMasterSymptom(idx) {
             if (confirm('ต้องการลบอาการเสียนี้จากรายการ Master หรือไม่?')) {
                 masterSymptoms.splice(idx, 1);
-                await saveSymptomsToFirebase();
+                await saveMasterDataToFirebase();
                 renderMasterSymptoms();
             }
         }
